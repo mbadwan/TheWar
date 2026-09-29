@@ -1,0 +1,141 @@
+apply plugin: 'com.android.application'
+ext {
+    gdxVersion = '1.12.1' // replace with your actual gdx version
+}
+android {
+    namespace "com.thewar"
+    compileSdk 35
+    // Use the SDK version you are targeting
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['../assets']
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/robovm/ios/robovm.xml'
+    }
+
+    defaultConfig {
+        applicationId "com.thewar"
+        minSdkVersion 26
+        //noinspection OldTargetApi
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('D:/b_m/b_m/GameWorkspace/android/debug.keystore')
+            storePassword '123456'
+            keyAlias 'androiddebugkey'
+            keyPassword '123456'
+        }
+        release {
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: 'path/to/release.keystore')
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: 'defaultPassword'
+            keyAlias System.getenv("KEY_ALIAS") ?: 'defaultAlias'
+            keyPassword System.getenv("KEY_PASSWORD") ?: 'defaultPassword'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility 17
+        targetCompatibility 17
+    }
+            '35.0.0 rc4'
+    ndkVersion '27.0.11902837 rc2'
+}
+configurations {
+    natives
+}
+tasks.register('copyAndroidNatives', CopyAndroidNativesTask) {
+    outputDir = layout.buildDirectory.dir("natives")
+    // Assuming your native libraries are stored in 'src/main/jniLibs/', adjust the path as necessary
+    natives.setFrom(files('src/main/jniLibs/'))
+}
+
+tasks.matching { it.name.contains("merge") && it.name.contains("JniLibFolders") }.configureEach { packageTask ->
+    packageTask.dependsOn 'copyAndroidNatives'
+}
+
+tasks.register('run', Exec) {
+    def path
+    def localProperties = project.file("../local.properties")
+    if (localProperties.exists()) {
+        Properties properties = new Properties()
+        localProperties.withInputStream { instr ->
+            properties.load(instr)
+        }
+        def sdkDir = properties.getProperty('sdk.dir')
+        if (sdkDir) {
+            path = sdkDir
+        } else {
+            path = "$System.env.ANDROID_HOME"
+        }
+    } else {
+        path = "$System.env.ANDROID_HOME"
+    }
+
+    def adb = path + "/platform-tools/adb"
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.thewar/com.thewar.AndroidLauncher'
+}
+
+eclipse.project.name = "com.thewar-android"
+configurations {
+    natives
+}
+dependencies {
+    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+    implementation project(':core')
+    implementation 'com.android.support:support-annotations:28.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
+    natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64"
+
+
+
+}
+tasks.register('extractNatives', Copy) {
+    from configurations.natives
+    into layout.buildDirectory.dir("natives")
+    eachFile { FileCopyDetails details ->
+        details.name = details.name.replaceFirst(/-[\d.]+/, '') // Remove version from the file name if present
+    }
+    include "**/*.so", "**/*.dll", "**/*.dylib"
+}
+
+tasks.withType(JavaExec).configureEach {
+    dependsOn extractNatives
+    jvmArgs += "-Djava.library.path=${layout.buildDirectory.dir('natives').asFile.absolutePath}"}

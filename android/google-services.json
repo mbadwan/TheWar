@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "98597396549",
+    "project_id": "gameworkspace-49e43",
+    "storage_bucket": "gameworkspace-49e43.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98597396549:android:840d4ea6f88aa5d488032c",
+        "android_client_info": {
+          "package_name": "com.thewar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAlHWDzXs7ifY_6Xs3JAQ9NcPZ87vFoYw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

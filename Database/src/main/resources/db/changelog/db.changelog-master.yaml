@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: user
+      changes:
+        - createTable:
+            tableName: person
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: varchar(50)
+              - column:
+                  name: last_name
+                  type: varchar(50)
+  - changeSet:
+      id: 2
+      author: user
+      changes:
+        - addColumn:
+            tableName: person
+            columns:
+              - column:
+                  name: email
+                  type: varchar(100)
+                  constraints:
+                    unique: true

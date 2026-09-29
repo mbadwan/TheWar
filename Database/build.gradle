@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'org.liquibase.gradle' version '2.0.4'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+     'mysql:mysql-connector-java:8.0.28'
+     'org.liquibase:liquibase-core:4.8.0'
+     'junit:junit:4.13.1'
+}
+
+// Define database connection properties
+def dbUrl = System.getenv("DB_URL") ?: "jdbc:mysql://localhost:3306/mydb"
+def dbUser = System.getenv("DB_USER") ?: "myuser"
+def dbPassword = System.getenv("DB_PASSWORD") ?: "mypassword"
+
+liquibase {
+    activities {
+        register("main") {
+            arguments = [
+                    "changeLogFile": "src/main/resources/db/changelog/db.changelog-master.yaml",
+                    "url"          : dbUrl,
+                    "username"     : dbUser,
+                    "password"     : dbPassword
+            ]
+        }
+    }
+    runList = 'main'
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}

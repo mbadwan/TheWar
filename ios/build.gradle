@@ -1,0 +1,34 @@
+apply plugin: "robovm"
+apply plugin: "java-library"
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+java.targetCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+ext {
+	mainClassName = "com.thewar.IOSLauncher"
+}
+
+launchIPhoneSimulator.dependsOn build
+launchIPadSimulator.dependsOn build
+launchIOSDevice.dependsOn build
+createIPA.dependsOn build
+
+robovm {
+	archs = "arm64"
+}
+dependencies {
+	implementation project(":core")
+	api "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
+	api "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
+	api "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+	api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-ios"
+	api "com.badlogicgames.gdx-controllers:gdx-controllers-ios:$gdxControllersVersion"
+}
+eclipse.project.name = appName + "-ios"
+configurations {
+	natives
+}
+java.targetCompatibility = JavaVersion.VERSION_1_8
